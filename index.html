@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+    <title>VueJS Folder Tree</title>
+</head>
+<body>
+    <div id="app">
+        <ul v-if="tree">
+            <li-component v-for="(node,index) in tree.list.entries" :node="node" :key="index" />
+        </ul>
+    </div>
+    <script src="js/axios.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/vue.js"></script>
+    <script>
+
+    Vue.component("li-component",{
+        props : ["node"],
+        name : "li-component",
+        data:function(){
+            return {
+                contentOpen : false,
+                file : "link fa fa-file",
+                folder : "link fa fa-folder",
+                folderOpen : false,
+                tree : null,
+            }
+        },
+        methods : {
+            content(nodeId){
+                if(!this.contentOpen){
+                    axios.get(BASE_URL+`/nodes/${nodeId}/content`)
+                    .then((response)=>{
+                        this.$refs[nodeId].value = response.data;
+                    });
+                }
+                this.contentOpen = !this.contentOpen;
+            },
+            openFolder(nodeId){
+                if(!this.folderOpen){
+                    axios.get(BASE_URL+`/nodes/${nodeId}/children`)
+                    .then((response)=>{
+                        this.tree = response.data;
+                    });
+                }
+                this.folderOpen = !this.folderOpen;
+            }
+        },
+        template:`
+                <li>
+                    <a class='link' v-if="node.entry.isFile" @click="content(node.entry.id)"><i :class="[node.entry.isFile ? file : folder]"> {{node.entry.name}}</i></a>
+                    <i v-else :class="[node.entry.isFile ? file : folder]" @click="openFolder(node.entry.id)"> {{node.entry.name}}</i>
+                    <ul v-if="folderOpen && tree">
+                        <li-component v-for="(node,index) in tree.list.entries" :node="node" :key="index" />
+                    </ul>
+                    <br>
+                    <textarea v-show="contentOpen" :ref="node.entry.id"></textarea>
+                    <p>{{node.entry.createdAt}}</p>
+                </li>
+        `
+    });
+    
+    const app = new Vue({
+        el : "#app",
+        data : {
+            tree : null,
+            currentContent : null,
+        },
+        methods : {
+            getList(){
+                axios.get(BASE_URL+"/nodes/-root-/children")
+                .then((response)=>{
+                    this.tree = response.data;
+                });
+            }
+        },
+        mounted:function (){
+            this.getList();
+        }
+    })
+
+    </script>
+</body>
+</html>

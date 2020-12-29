@@ -41,6 +41,7 @@ export default{
                         <i v-else :class="[node.entry.isFile ? file : folder]" @click="openFolder(node.entry.id)"> {{node.entry.name}}</i>
                     </h5>
                     <ul v-if="folderOpen && tree">
+                        <li v-if="!tree.list.entries.length">Vazio</li>
                         <li-component v-for="(node,index) in tree.list.entries" :node="node" :key="index" />
                     </ul>
                     <br>

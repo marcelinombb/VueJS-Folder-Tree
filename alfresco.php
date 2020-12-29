@@ -4,6 +4,7 @@ class AlfrescoAPI{
 
     private $BASE_URL = "http://127.0.0.1:8080/alfresco/api/-default-/public/alfresco/versions/1";
     private $TICKET_URL = "http://127.0.0.1:8080/alfresco/api/-default-/public/authentication/versions/1/tickets";
+    
     private $ticket;
     
     public function __construct(){
